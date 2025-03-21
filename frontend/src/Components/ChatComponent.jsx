@@ -61,12 +61,14 @@ const ChatComponent = ({ recipientDetails, setRecipientDetails }) => {
   }, [messages]);
 
   const handleSend = () => {
-    socket.emit("message", { msg: messageInput, date: Date.now() });
-    setMessages([
-      ...messages,
-      { type: "send", content: messageInput, date: Date.now() },
-    ]);
-    setMessageInput("");
+    if (messageInput.trim() != "") {
+      socket.emit("message", { msg: messageInput, date: Date.now() });
+      setMessages([
+        ...messages,
+        { type: "send", content: messageInput, date: Date.now() },
+      ]);
+      setMessageInput("");
+    }
   };
 
   socket &&

@@ -7,9 +7,11 @@ const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
 const { type } = require("os");
+const { log } = require("console");
 
 const app = express();
 const server = http.createServer(app);
+
 const chatIo = socketIo(server, {
   cors: {
     origin: "*", // Allow all origins (you can replace "*" with specific domains like "http://localhost:3000")
@@ -235,6 +237,34 @@ chatIo.on("connection", (socket) => {
   });
 
   // Handle disconnection
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+  });
+});
+
+let requests = [];
+
+shareIo.on("connection", (socket) => {
+  let id, rid;
+  log("Share a user connected");
+
+  socket.on("init", async (data) => {
+    log(data);
+    id = data.id;
+    rid = data.recipientId;
+    requests.push({ id, rid });
+    log(requests);
+    const name = await UserModel.findById(data.id).select("name");
+
+    shareIo.emit("init" + data.recipientId, {
+      message: `${name.name} want to share you ${data.metaData.name}`,
+    });
+  });
+
+  socket.on("accept", (accept) => {
+    log(accept);
+  });
+
   socket.on("disconnect", () => {
     console.log("User disconnected");
   });
